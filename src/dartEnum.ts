@@ -1,4 +1,4 @@
-import { TextDocument, Range, Position } from 'vscode';
+import { TextDocument, Range, Position } from "vscode";
 
 export default class DartEnum {
   name: string;
@@ -38,9 +38,9 @@ export default class DartEnum {
 
   private static extractValues(input: string): string[] {
     return input
-      .split(',')
+      .split(",")
       .map((e) => e.trim())
-      .filter((e) => e !== '');
+      .filter((e) => e !== "");
   }
 
   toDartCode(): string {
@@ -52,13 +52,35 @@ extension ${this.name}PatternMatch on ${this.name} {
     return code;
   }
 
+  toBooleanMethod(): string {
+    const methods = this.values
+      .map(
+        (value) =>
+          ` bool get is${this.toPascalCase(value)} => this == ${
+            this.name
+          }.${value};`
+      )
+      .join("\n ");
+    return methods;
+  }
+
+  private toPascalCase(value: string): string {
+    return value
+      .split("")
+      .map((e, index) => {
+        if (index == 0) return e.toUpperCase();
+        return e;
+      })
+      .join("");
+  }
+
   private toWhenMethod(): string {
     const args = this.values
       .map((e) => `required T Function() ${e},`)
-      .join('\n    ');
+      .join("\n    ");
     const cases = this.values
       .map((e) => `case ${this.name}.${e}:\n        return ${e}();`)
-      .join('\n      ');
+      .join("\n      ");
 
     return `
   T when<T>({

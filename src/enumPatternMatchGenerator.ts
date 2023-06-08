@@ -1,5 +1,5 @@
-import * as vscode from 'vscode';
-import DartEnum from './dartEnum';
+import * as vscode from "vscode";
+import DartEnum from "./dartEnum";
 
 export class EnumPatternMatchGenerator implements vscode.CodeActionProvider {
   public provideCodeActions(
@@ -8,7 +8,7 @@ export class EnumPatternMatchGenerator implements vscode.CodeActionProvider {
     context: vscode.CodeActionContext,
     token: vscode.CancellationToken
   ): vscode.ProviderResult<(vscode.CodeAction | vscode.Command)[]> {
-    const action = this.generatePatternMatch(document, range);
+    const action = this.generateBooleanGetterMethod(document, range);
 
     if (!action) {
       return [];
@@ -23,12 +23,12 @@ export class EnumPatternMatchGenerator implements vscode.CodeActionProvider {
     vscode.CodeActionKind.Empty,
   ];
 
-  private generatePatternMatch(
+  private generateBooleanGetterMethod(
     document: vscode.TextDocument,
     range: vscode.Range
   ): vscode.CodeAction | null {
     const fix = new vscode.CodeAction(
-      'Generate Pattern-Match methods',
+      "Generate Bool getter method",
       vscode.CodeActionKind.Refactor
     );
 
@@ -40,19 +40,18 @@ export class EnumPatternMatchGenerator implements vscode.CodeActionProvider {
 
     const cursorLine = document.lineAt(range.start.line);
 
-    if (!cursorLine || !cursorLine.text.includes('enum')) {
+    if (!cursorLine || !cursorLine.text.includes("enum")) {
       return null;
     }
 
     var rawInput = cursorLine.text;
     var line = range.start.line;
-    while (!rawInput.includes('}')) {
+    while (!rawInput.includes("}")) {
       line++;
       rawInput += document.lineAt(line).text;
     }
 
     fix.edit = new vscode.WorkspaceEdit();
-
     const dartEnum = DartEnum.fromString(rawInput);
 
     if (!dartEnum) {
@@ -62,7 +61,7 @@ export class EnumPatternMatchGenerator implements vscode.CodeActionProvider {
     fix.edit.insert(
       document.uri,
       new vscode.Position(line + 1, 0),
-      dartEnum.toDartCode()
+      dartEnum.toBooleanMethod()
     );
 
     return fix;
